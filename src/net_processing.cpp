@@ -4513,6 +4513,12 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
             bool fRevertToInv = ((!state.fPreferHeaders &&
                                  (!state.fPreferHeaderAndIDs || peer->m_blocks_for_headers_relay.size() > 1)) ||
                                  peer->m_blocks_for_headers_relay.size() > MAX_BLOCKS_TO_ANNOUNCE);
+            if (fRevertToInv) {
+                LogPrint(BCLog::NET, "SendMessages: fRevertToInv=True\n");
+            } else {
+                LogPrint(BCLog::NET, "SendMessages: fRevertToInv=False\n");
+            }
+
             const CBlockIndex *pBestIndex = nullptr; // last header queued for delivery
             ProcessBlockAvailability(pto->GetId()); // ensure pindexBestKnownBlock is up-to-date
 

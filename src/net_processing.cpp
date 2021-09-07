@@ -3788,7 +3788,7 @@ void PeerManagerImpl::ProcessMessage(CNode& pfrom, const std::string& msg_type, 
             // return very quickly.
             m_connman.PushMessage(&pfrom, msgMaker.Make(NetMsgType::PONG, nonce));
 
-            PeerManagerImpl::SendMessages(&pfrom);
+            //PeerManagerImpl::SendMessages(&pfrom);
         }
         return;
     }

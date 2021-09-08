@@ -4514,9 +4514,9 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                                  (!state.fPreferHeaderAndIDs || peer->m_blocks_for_headers_relay.size() > 1)) ||
                                  peer->m_blocks_for_headers_relay.size() > MAX_BLOCKS_TO_ANNOUNCE);
             if (fRevertToInv) {
-                LogPrint(BCLog::NET, "SendMessages: fRevertToInv=True\n");
+                LogPrint(BCLog::NET, "SendMessages: fRevertToInv=True peer=%d\n", pto->GetId());
             } else {
-                LogPrint(BCLog::NET, "SendMessages: fRevertToInv=False\n");
+                LogPrint(BCLog::NET, "SendMessages: fRevertToInv=False peer=%d\n", pto->GetId());
             }
 
             const CBlockIndex *pBestIndex = nullptr; // last header queued for delivery
@@ -4569,6 +4569,18 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                     }
                 }
             }
+            if (fRevertToInv) {
+                LogPrint(BCLog::NET, "SendMessages: fRevertToInv2=True peer=%d\n", pto->GetId());
+            } else {
+                LogPrint(BCLog::NET, "SendMessages: fRevertToInv2=False peer=%d\n", pto->GetId());
+            }
+            
+            if (vHeaders.empty()) {
+                LogPrint(BCLog::NET, "SendMessages: vHeaders.empty()=True peer=%d\n", pto->GetId());
+            } else {
+                LogPrint(BCLog::NET, "SendMessages: vHeaders.empty()=False peer=%d\n", pto->GetId());
+            }
+            
             if (!fRevertToInv && !vHeaders.empty()) {
                 if (state.fPreferHeaders) {
                     LogPrint(BCLog::NET, "SendMessages: fPreferHeaders=True\n");

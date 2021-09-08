@@ -4528,14 +4528,17 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                 // then send all headers past that one.  If we come across any
                 // headers that aren't on m_chainman.ActiveChain(), give up.
                 for (const uint256& hash : peer->m_blocks_for_headers_relay) {
+                    LogPrint(BCLog::NET, "cp1 ");
                     const CBlockIndex* pindex = m_chainman.m_blockman.LookupBlockIndex(hash);
                     assert(pindex);
                     if (m_chainman.ActiveChain()[pindex->nHeight] != pindex) {
+                        LogPrint(BCLog::NET, "cp2 ");
                         // Bail out if we reorged away from this block
                         fRevertToInv = true;
                         break;
                     }
                     if (pBestIndex != nullptr && pindex->pprev != pBestIndex) {
+                        LogPrint(BCLog::NET, "cp3 ");
                         // This means that the list of blocks to announce don't
                         // connect to each other.
                         // This shouldn't really be possible to hit during
@@ -4552,22 +4555,29 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                     }
                     pBestIndex = pindex;
                     if (fFoundStartingHeader) {
+                        LogPrint(BCLog::NET, "cp4 ");
                         // add this to the headers message
                         vHeaders.push_back(pindex->GetBlockHeader());
                     } else if (PeerHasHeader(&state, pindex)) {
+                        LogPrint(BCLog::NET, "cp5 ");
                         continue; // keep looking for the first new block
                     } else if (pindex->pprev == nullptr || PeerHasHeader(&state, pindex->pprev)) {
+                        LogPrint(BCLog::NET, "cp6 ");
                         // Peer doesn't have this header but they do have the prior one.
                         // Start sending headers.
                         fFoundStartingHeader = true;
                         vHeaders.push_back(pindex->GetBlockHeader());
                     } else {
+                        LogPrint(BCLog::NET, "cp7 ");
                         // Peer doesn't have this header or the prior one -- nothing will
                         // connect, so bail out.
                         fRevertToInv = true;
                         break;
                     }
+                    
                 }
+                LogPrint(BCLog::NET, "cp8\n");
+                
             }
             if (fRevertToInv) {
                 LogPrint(BCLog::NET, "SendMessages: fRevertToInv2=True peer=%d\n", pto->GetId());

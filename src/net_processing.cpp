@@ -4513,12 +4513,6 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
             bool fRevertToInv = ((!state.fPreferHeaders &&
                                  (!state.fPreferHeaderAndIDs || peer->m_blocks_for_headers_relay.size() > 1)) ||
                                  peer->m_blocks_for_headers_relay.size() > MAX_BLOCKS_TO_ANNOUNCE);
-            if (fRevertToInv) {
-                LogPrint(BCLog::NET, "SendMessages: fRevertToInv=True peer=%d\n", pto->GetId());
-            } else {
-                LogPrint(BCLog::NET, "SendMessages: fRevertToInv=False peer=%d\n", pto->GetId());
-            }
-
             const CBlockIndex *pBestIndex = nullptr; // last header queued for delivery
             ProcessBlockAvailability(pto->GetId()); // ensure pindexBestKnownBlock is up-to-date
 
@@ -4559,39 +4553,17 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                         fForceSendHeaders = true;
                     pBestIndex = pindex;
                     
-                    if (state.pindexBestHeaderSent) {
-                        LogPrint(BCLog::NET, "state.pindexBestHeaderSent=True %d\n", state.pindexBestHeaderSent->nHeight);
-                    } else {
-                        LogPrint(BCLog::NET, "state.pindexBestHeaderSent=False\n");
-                    }
-                    LogPrint(BCLog::NET, "pindex->pprev %d\n", pindex->pprev->nHeight);
-                    LogPrint(BCLog::NET, "pindex %d\n", pindex->nHeight);
-                    if (pindex->pprev == state.pindexBestHeaderSent) {
-                        LogPrint(BCLog::NET, "pindex->pprev == state.pindexBestHeaderSent\n");
-                    } else {
-                        LogPrint(BCLog::NET, "pindex->pprev != state.pindexBestHeaderSent\n");
-                    }
-                    if (pindex == state.pindexBestHeaderSent) {
-                        LogPrint(BCLog::NET, "pindex == state.pindexBestHeaderSent\n");
-                    } else {
-                        LogPrint(BCLog::NET, "pindex != state.pindexBestHeaderSent\n");
-                    }
-                    
                     if (fForceSendHeaders) {
-                        LogPrint(BCLog::NET, "cp4 ");
                         // add this to the headers message
                         vHeaders.push_back(pindex->GetBlockHeader());
                     } else if (PeerHasHeader(&state, pindex)) {
-                        LogPrint(BCLog::NET, "cp5 ");
                         continue; // keep looking for the first new block
                     } else if (pindex->pprev == nullptr || PeerHasHeader(&state, pindex->pprev)) {
-                        LogPrint(BCLog::NET, "cp6 ");
                         // Peer doesn't have this header but they do have the prior one.
                         // Start sending headers.
                         fFoundStartingHeader = true;
                         vHeaders.push_back(pindex->GetBlockHeader());
                     } else {
-                        LogPrint(BCLog::NET, "cp7 ");
                         // Peer doesn't have this header or the prior one -- nothing will
                         // connect, so bail out.
                         fRevertToInv = true;
@@ -4599,32 +4571,10 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                     }
                     
                 }
-                LogPrint(BCLog::NET, "cp8\n");
                 
-            }
-            if (fRevertToInv) {
-                LogPrint(BCLog::NET, "SendMessages: fRevertToInv2=True peer=%d\n", pto->GetId());
-            } else {
-                LogPrint(BCLog::NET, "SendMessages: fRevertToInv2=False peer=%d\n", pto->GetId());
-            }
-            
-            if (vHeaders.empty()) {
-                LogPrint(BCLog::NET, "SendMessages: vHeaders.empty()=True peer=%d\n", pto->GetId());
-            } else {
-                LogPrint(BCLog::NET, "SendMessages: vHeaders.empty()=False peer=%d\n", pto->GetId());
             }
             
             if (!fRevertToInv && !vHeaders.empty()) {
-                if (state.fPreferHeaders) {
-                    LogPrint(BCLog::NET, "SendMessages: fPreferHeaders=True\n");
-                } else {
-                    LogPrint(BCLog::NET, "SendMessages: fPreferHeaders=False\n");
-                }
-                if (state.fPreferHeaderAndIDs) {
-                    LogPrint(BCLog::NET, "SendMessages: fPreferHeaderAndIDs=True\n");
-                } else {
-                    LogPrint(BCLog::NET, "SendMessages: fPreferHeaderAndIDs=False\n");
-                }
                 if (vHeaders.size() == 1 && state.fPreferHeaderAndIDs) {
                     // We only send up to 1 block as header-and-ids, as otherwise
                     // probably means we're doing an initial-ish-sync or they're slow
@@ -4654,7 +4604,7 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                         m_connman.PushMessage(pto, msgMaker.Make(nSendFlags, NetMsgType::CMPCTBLOCK, cmpctblock));
                     }
                     state.pindexBestHeaderSent = pBestIndex;
-                } else if (state.fPreferHeaders || (state.pindexBestHeaderSent && state.pindexBestHeaderSent != pBestIndex)) {
+                } else if (state.fPreferHeaders) {
                     if (vHeaders.size() > 1) {
                         LogPrint(BCLog::NET, "%s: %u headers, range (%s, %s), to peer=%d\n", __func__,
                                 vHeaders.size(),

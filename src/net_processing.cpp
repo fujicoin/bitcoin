@@ -4527,6 +4527,8 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                 // Try to find first header that our peer doesn't have, and
                 // then send all headers past that one.  If we come across any
                 // headers that aren't on m_chainman.ActiveChain(), give up.
+                bool fForceSendHeaders = false;
+                
                 for (const uint256& hash : peer->m_blocks_for_headers_relay) {
                     LogPrint(BCLog::NET, "cp1 ");
                     const CBlockIndex* pindex = m_chainman.m_blockman.LookupBlockIndex(hash);
@@ -4553,7 +4555,10 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                         fRevertToInv = true;
                         break;
                     }
+                    if (state.pindexBestHeaderSent && state.pindexBestHeaderSent == pindex->pprev)
+                        fForceSendHeaders = true;
                     pBestIndex = pindex;
+                    
                     if (state.pindexBestHeaderSent) {
                         LogPrint(BCLog::NET, "state.pindexBestHeaderSent=True %d\n", state.pindexBestHeaderSent->nHeight);
                     } else {
@@ -4572,7 +4577,7 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                         LogPrint(BCLog::NET, "pindex != state.pindexBestHeaderSent\n");
                     }
                     
-                    if (fFoundStartingHeader) {
+                    if (fForceSendHeaders) {
                         LogPrint(BCLog::NET, "cp4 ");
                         // add this to the headers message
                         vHeaders.push_back(pindex->GetBlockHeader());

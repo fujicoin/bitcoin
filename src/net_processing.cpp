@@ -4554,6 +4554,18 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                         break;
                     }
                     pBestIndex = pindex;
+                    
+                    if (pindex->pprev == state.pindexBestHeaderSent) {
+                        LogPrint(BCLog::NET, "pindex->pprev == state.pindexBestHeaderSent\n");
+                    } else {
+                        LogPrint(BCLog::NET, "pindex->pprev != state.pindexBestHeaderSent\n");
+                    }
+                    if (pindex == state.pindexBestHeaderSent) {
+                        LogPrint(BCLog::NET, "pindex == state.pindexBestHeaderSent\n");
+                    } else {
+                        LogPrint(BCLog::NET, "pindex != state.pindexBestHeaderSent\n");
+                    }
+                    
                     if (fFoundStartingHeader) {
                         LogPrint(BCLog::NET, "cp4 ");
                         // add this to the headers message

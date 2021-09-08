@@ -3787,8 +3787,6 @@ void PeerManagerImpl::ProcessMessage(CNode& pfrom, const std::string& msg_type, 
             // seconds to respond to each, the 5th ping the remote sends would appear to
             // return very quickly.
             m_connman.PushMessage(&pfrom, msgMaker.Make(NetMsgType::PONG, nonce));
-
-            //PeerManagerImpl::SendMessages(&pfrom);
         }
         return;
     }
@@ -4524,17 +4522,14 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                 bool fForceSendHeaders = false;
                 
                 for (const uint256& hash : peer->m_blocks_for_headers_relay) {
-                    LogPrint(BCLog::NET, "cp1 ");
                     const CBlockIndex* pindex = m_chainman.m_blockman.LookupBlockIndex(hash);
                     assert(pindex);
                     if (m_chainman.ActiveChain()[pindex->nHeight] != pindex) {
-                        LogPrint(BCLog::NET, "cp2 ");
                         // Bail out if we reorged away from this block
                         fRevertToInv = true;
                         break;
                     }
                     if (pBestIndex != nullptr && pindex->pprev != pBestIndex) {
-                        LogPrint(BCLog::NET, "cp3 ");
                         // This means that the list of blocks to announce don't
                         // connect to each other.
                         // This shouldn't really be possible to hit during
@@ -4569,11 +4564,8 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                         fRevertToInv = true;
                         break;
                     }
-                    
                 }
-                
             }
-            
             if (!fRevertToInv && !vHeaders.empty()) {
                 if (vHeaders.size() == 1 && state.fPreferHeaderAndIDs) {
                     // We only send up to 1 block as header-and-ids, as otherwise

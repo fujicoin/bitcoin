@@ -4570,6 +4570,16 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                 }
             }
             if (!fRevertToInv && !vHeaders.empty()) {
+                if (state.fPreferHeaders) {
+                    LogPrint(BCLog::NET, "SendMessages: fPreferHeaders=True\n");
+                } else {
+                    LogPrint(BCLog::NET, "SendMessages: fPreferHeaders=False\n");
+                }
+                if (state.fPreferHeaderAndIDs) {
+                    LogPrint(BCLog::NET, "SendMessages: fPreferHeaderAndIDs=True\n");
+                } else {
+                    LogPrint(BCLog::NET, "SendMessages: fPreferHeaderAndIDs=False\n");
+                }
                 if (vHeaders.size() == 1 && state.fPreferHeaderAndIDs) {
                     // We only send up to 1 block as header-and-ids, as otherwise
                     // probably means we're doing an initial-ish-sync or they're slow
@@ -4599,7 +4609,7 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                         m_connman.PushMessage(pto, msgMaker.Make(nSendFlags, NetMsgType::CMPCTBLOCK, cmpctblock));
                     }
                     state.pindexBestHeaderSent = pBestIndex;
-                } else if (state.fPreferHeaders) {
+                } else if (state.fPreferHeaders || (state.pindexBestHeaderSent && state.pindexBestHeaderSent != pBestIndex)) {
                     if (vHeaders.size() > 1) {
                         LogPrint(BCLog::NET, "%s: %u headers, range (%s, %s), to peer=%d\n", __func__,
                                 vHeaders.size(),

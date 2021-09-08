@@ -4554,7 +4554,13 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                         break;
                     }
                     pBestIndex = pindex;
-                    
+                    if (state.pindexBestHeaderSent) {
+                        LogPrint(BCLog::NET, "state.pindexBestHeaderSent=True %d\n", state.pindexBestHeaderSent->nHeight);
+                    } else {
+                        LogPrint(BCLog::NET, "state.pindexBestHeaderSent=False\n");
+                    }
+                    LogPrint(BCLog::NET, "pindex->pprev %d\n", pindex->pprev->nHeight);
+                    LogPrint(BCLog::NET, "pindex %d\n", pindex->nHeight);
                     if (pindex->pprev == state.pindexBestHeaderSent) {
                         LogPrint(BCLog::NET, "pindex->pprev == state.pindexBestHeaderSent\n");
                     } else {
